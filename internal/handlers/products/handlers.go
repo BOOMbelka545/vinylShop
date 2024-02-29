@@ -27,6 +27,7 @@ func CreateProduct(product postgresql.Product) (int, error) {
 
 // func GetProduct() (product, error) {
 // }
+//
 
 // func UpdateProduct() (product, error) {
 // }
