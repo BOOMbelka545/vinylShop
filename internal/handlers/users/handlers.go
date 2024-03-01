@@ -59,7 +59,7 @@ func UpdateUser(email interface{}, user postgresql.User) error {
 		UPDATE users
 		SET password = $2
 		WHERE email = $1
-		RETURNING id_u
+		RETURNING id
 	`
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 8)

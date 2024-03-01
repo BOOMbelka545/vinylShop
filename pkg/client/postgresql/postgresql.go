@@ -26,7 +26,7 @@ type User struct {
 type Product struct {
 	Id          int    `json:"id,omitempty"`
 	Name        string `json:"name" validate:"required"`
-	Cost        string `json:"cost,omitempty" validate:"min=0,required"`
+	Cost        int    `json:"cost,omitempty" validate:"min=0,required"`
 	ArtistName  string `json:"artistName,omitempty"`
 }
 

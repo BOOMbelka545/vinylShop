@@ -30,7 +30,7 @@ func InsertUser(ctx context.Context, user postgresql.User) (int, error) {
 		return 0, echo.NewHTTPError(http.StatusConflict, "User already exist!")
 	}
 
-	sqlStatement := "INSERT INTO users (email, password, isAdmin) VALUES ($1, $2, $3) RETURNING id_u"
+	sqlStatement := "INSERT INTO users (email, password, isAdmin) VALUES ($1, $2, $3) RETURNING id"
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
 	if err != nil {

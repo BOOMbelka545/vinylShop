@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"net/http"
+	"strconv"
 	"time"
 	"vinylShop/config"
 	p "vinylShop/internal/handlers/products"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"gopkg.in/go-playground/validator.v9"
@@ -209,6 +212,49 @@ func CreateProduct(c echo.Context) error {
 
 // Delete product
 func DeleteProduct(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
 
-	return nil
+	id, err = p.DeleteProduct(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, id)
+}
+
+// Get product
+func GetProduct(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Bad Request")
+	}
+
+	product, err := p.GetProduct(id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return c.JSON(http.StatusNotFound, "Not Found")
+		}
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, product)
+}
+
+// Update product
+func UpdateProduct(c echo.Context) error {
+	var product postgresql.Product
+	if err := c.Bind(&product); err != nil {
+		log.Infof("Cannot bind the request: %v \n", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Something wrong witg request. Please check it :)")
+	}
+
+	product, err := p.UpdateProduct(product)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, product)
 }

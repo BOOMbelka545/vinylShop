@@ -55,14 +55,10 @@ func main() {
 
 	// Products handlers
 	e.POST("/product", h.CreateProduct, adminMiddleware)
-	e.DELETE("/product/", h.DeleteProduct)
-	// e.GET("/product/:id", h.GetProduct)
-	// e.PUT("/product/:id", h.UpdateProduct)
+	e.DELETE("/product/:id", h.DeleteProduct, adminMiddleware)
+	e.GET("/product/:id", h.GetProduct)
+	e.PUT("/product", h.UpdateProduct)
 
-	// _, err := conn.Exec(context.Background(), "CREATE TABLE test (id int PRIMARY KEY)")
-	// if err != nil {
-	// 	log.Print(err)
-	// }
 
 	e.Logger.Infof("Listening on %s:%s", cfg.Host, cfg.Port)
 	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)))
