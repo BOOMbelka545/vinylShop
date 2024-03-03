@@ -45,20 +45,17 @@ func CreateUser(c echo.Context) error {
 	// user := make(map[string]interface{}) OR  var user User OR user = User{}
 	// json.NewDecoder(c.Request().Body).Decode(&user)  -- another way to get request body
 
-	// Get user from request body
 	user := postgresql.User{}
 	if err := c.Bind(&user); err != nil {
 		log.Infof("Cannot bind the request: %v \n", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Something wrong witg request. Please check it :)")
 	}
 
-	// Validate data
 	c.Echo().Validator = &CustomValidator{validator: v}
 	if err := c.Validate(user); err != nil {
 		return err
 	}
 
-	// Insert the new user in DB
 	newUserId, err := u.InsertUser(context.Background(), user)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -67,44 +64,36 @@ func CreateUser(c echo.Context) error {
 	return c.JSON(http.StatusCreated, newUserId)
 }
 
-// Authenticate user handler
 func AuthnUser(c echo.Context) error {
-	// Get user from request body
 	user := postgresql.User{}
 	if err := c.Bind(&user); err != nil {
 		log.Infof("Cannot bind the request: %v \n", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Something wrong witg request. Please check it :)")
 	}
 
-	// Authenticate user
 	user, err := u.AuthenticateUser(context.Background(), user)
 	if err != nil {
 		log.Errorf("Unable to authenticate to db.")
 		return err
 	}
 
-	// Create access token
 	accessToken, er := u.CreateToken(user, accessTokenMaxAge)
 	if er != nil {
 		log.Errorf("Unable to generate the token")
 		return echo.NewHTTPError(http.StatusInternalServerError, "Unable to generate the token")
 	}
-	// Set access token to response header
 	c.Response().Header().Set("X-Access-Token", accessToken)
 
-	// Create refresh token
 	refreshToken, er := u.CreateToken(user, refreshTokenMaxAge)
 	if er != nil {
 		log.Errorf("Unable to generate the token")
 		return echo.NewHTTPError(http.StatusInternalServerError, "Unable to generate the token")
 	}
-	// Set refresh token to response header
 	c.Response().Header().Set("X-Refresh-Token", refreshToken)
 
 	return c.JSON(http.StatusOK, user)
 }
 
-// Update password
 func UpdateUser(c echo.Context) error {
 	claims, err := u.GetClaims(c.Request())
 	if err != nil {
@@ -113,14 +102,12 @@ func UpdateUser(c echo.Context) error {
 
 	email := claims["email"]
 
-	// Bind request to User struct
 	user := postgresql.User{}
 	if err = c.Bind(&user); err != nil {
 		log.Infof("Cannot bind the request: %v \n", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Something wrong witg request. Please check it :)")
 	}
 
-	// Update user
 	err = u.UpdateUser(email, user)
 	if err != nil {
 		return err
@@ -129,18 +116,15 @@ func UpdateUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, "The user has been updated")
 }
 
-// Refresh Token
 func RefreshToken(c echo.Context) error {
 	var user postgresql.User
 
 	db := postgresql.GetDB()
 
-	// Read config from environment
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		log.Fatalf("Config cannot be read: %v\n", err)
 	}
 
-	// Get refresh token from request body
 	refreshToken := c.Request().Header["X-Refresh-Token"][0]
 	claims := jwt.MapClaims{}
 
@@ -152,7 +136,6 @@ func RefreshToken(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Unable to parse JWT with claims")
 	}
 
-	// Checking token validity
 	if !token.Valid {
 		log.Errorf("invalid token")
 	}
@@ -247,7 +230,7 @@ func GetProduct(c echo.Context) error {
 func UpdateProduct(c echo.Context) error {
 	var product postgresql.Product
 	if err := c.Bind(&product); err != nil {
-		log.Infof("Cannot bind the request: %v \n", err)
+		log.Errorf("Cannot bind the request: %v \n", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Something wrong witg request. Please check it :)")
 	}
 

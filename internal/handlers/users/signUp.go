@@ -41,6 +41,7 @@ func InsertUser(ctx context.Context, user postgresql.User) (int, error) {
 
 	err = db.QueryRow(ctx, sqlStatement, user.Email, user.Password, user.IsAdmin).Scan(&user.Id)
 	if err != nil {
+		log.Errorf("Cannot insert user into database: %v\n", err)
 		return user.Id, err
 	}
 

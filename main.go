@@ -18,7 +18,6 @@ var (
 )
 
 func init() {
-	// Read env for echo and DB
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		log.Fatalf("Config cannot be read: %v\n", err)
 	}

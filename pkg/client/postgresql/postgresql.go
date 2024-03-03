@@ -10,25 +10,21 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-// var (
-// 	cfg config.DBConfig
-// )
-
-// Structure users table 
-type User struct {
-	Id       int    `json:"id,omitempty"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password,omitempty" validate:"min=8,max=300,required"`
-	IsAdmin  bool   `json:"isadmin,omitempty"`
-}
-
-// Structure products table
-type Product struct {
-	Id          int    `json:"id,omitempty"`
-	Name        string `json:"name" validate:"required"`
-	Cost        int    `json:"cost,omitempty" validate:"min=0,required"`
-	ArtistName  string `json:"artistName,omitempty"`
-}
+type (
+	User struct {
+		Id       int    `json:"id,omitempty"`
+		Email    string `json:"email" validate:"required,email"`
+		Password string `json:"password,omitempty" validate:"min=8,max=300,required"`
+		IsAdmin  bool   `json:"isadmin,omitempty"`
+	}
+	
+	Product struct {
+		Id          int    `json:"id,omitempty"`
+		Name        string `json:"name" validate:"required"`
+		Cost        int    `json:"cost,omitempty" validate:"min=0,required"`
+		ArtistName  string `json:"artistName,omitempty"`
+	}
+)
 
 var (
 	conn *pgx.Conn
@@ -36,18 +32,42 @@ var (
 )
 
 func init() {
-	// Read env for echo and DB
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		log.Fatalf("Config cannot be read: %v\n", err)
 	}
 
-	// Connect to db
 	conn = connToDB(cfg)
+
+	// ! Maybe it doesn't work. I didn't check it but it looks good
+	// * Check migration file
+	sqlStatement := `
+		CREATE TABLE IF NOT EXISTS users (
+			id SERIAL PRIMARY KEY,
+			email VARCHAR(255) NOT NULL,
+			password VARCHAR(255) NOT NULL,
+			isadmin bool
+		)
+	`
+	_, err := conn.Exec(context.Background(), sqlStatement)
+	if err != nil {
+		log.Fatalf("Table users connot be created: %v\n", err)
+	}
+
+	sqlStatement = `
+		CREATE TABLE IF NOT EXISTS users (
+			id SERIAL PRIMARY KEY,
+			name VARCHAR(255) NOT NULL,
+			cost integer NOT NULL,
+			artistname VARCHAR(255) NOT NULL
+		)
+	`
+	_, err = conn.Exec(context.Background(), sqlStatement)
+	if err != nil {
+		log.Fatalf("Table products connot be created: %v\n", err)
+	}
 }
 
-// Connect to postgres DB
 func connToDB(cfg config.Properties) *pgx.Conn {
-	// Read env to cfg
 	err := cleanenv.ReadEnv(cfg)
 	if err != nil {
 		log.Fatalf("Unable to read the env: %v\n", err)

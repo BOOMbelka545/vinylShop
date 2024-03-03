@@ -19,6 +19,7 @@ var (
 // Compare given password and stored
 func isCredValid(givenPwd, storedPwd string) bool {
 	if err := bcrypt.CompareHashAndPassword([]byte(storedPwd), []byte(givenPwd)); err != nil {
+		log.Errorf("Cannot compare password: %v\n", err)
 		return false
 	}
 	return true
@@ -32,6 +33,7 @@ func AuthenticateUser(ctx context.Context, user postgresql.User) (postgresql.Use
 	sqlStatement := "SELECT password, isadmin FROM users WHERE email=($1)"
 	err := db.QueryRow(context.Background(), sqlStatement, user.Email).Scan(&storedUser.Password, &storedUser.IsAdmin)
 	if err == pgx.ErrNoRows {
+		log.Errorf("Cannot get data from database: %v\n", err)
 		return user, echo.NewHTTPError(http.StatusConflict, "User doesn't exist!")
 	}
 

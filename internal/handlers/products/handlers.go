@@ -2,14 +2,13 @@ package products
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"vinylShop/pkg/client/postgresql"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 )
 
-// Create product
 func CreateProduct(product postgresql.Product) (int, error) {
 	var id int
 	db := postgresql.GetDB()
@@ -21,31 +20,28 @@ func CreateProduct(product postgresql.Product) (int, error) {
 	`
 	err := db.QueryRow(context.Background(), sqlStatement, product.Name, product.Cost, product.ArtistName).Scan(&id)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorf("Cannot insert product into database: %v\n", err)
 		return 0, echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	return id, nil
 }
 
-// Delete product
 func DeleteProduct(id int) (int, error) {
 	db := postgresql.GetDB()
 	sqlStatement := `
 		DELETE FROM products
 		WHERE id = ($1)
 	`
-
 	_, err := db.Exec(context.Background(), sqlStatement, id)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorf("Cannot delete product from database: %v\n", err)
 		return 0, err
 	}
 
 	return id, nil
 }
 
-// Get product
 func GetProduct(id int) (postgresql.Product, error) {
 	var product postgresql.Product
 	db := postgresql.GetDB()
@@ -56,6 +52,7 @@ func GetProduct(id int) (postgresql.Product, error) {
 
 	err := db.QueryRow(context.Background(), sqlStatement, id).Scan(&product.Name, &product.Id, &product.ArtistName)
 	if err != nil {
+		log.Errorf("Cannot get product from database: %v\n", err)
 		return product, err
 	}
 
@@ -77,7 +74,7 @@ func UpdateProduct(product postgresql.Product) (postgresql.Product, error) {
 
 	err := db.QueryRow(context.Background(), sqlStatement, product.Name, product.Cost, product.ArtistName, product.Id).Scan(&newProduct.Name, &newProduct.Name, &newProduct.ArtistName)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorf("Cannot update product: %v\n", err)
 		return newProduct, err
 	}
 
