@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -40,7 +41,6 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 	return nil
 }
 
-// Create user handler
 func CreateUser(c echo.Context) error {
 	// user := make(map[string]interface{}) OR  var user User OR user = User{}
 	// json.NewDecoder(c.Request().Body).Decode(&user)  -- another way to get request body
@@ -142,42 +142,35 @@ func RefreshToken(c echo.Context) error {
 
 	email := claims["email"]
 
-	// SQL statement to get user from db
 	sqlStatement := `
 		SELECT (id_u, email, password, isadmin) FROM users
 		WHERE email = ($1);
 	`
 
-	// SQL request
 	err = db.QueryRow(context.Background(), sqlStatement, email).Scan(&user)
 	if err != nil {
 		log.Errorf("Unable to get the user: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "There are some problems with server")
 	}
 
-	// Create new access token
 	newAccessToken, err := u.CreateToken(user, accessTokenMaxAge)
 	if err != nil {
 		log.Errorf("Unable to generate the token")
 		return echo.NewHTTPError(http.StatusInternalServerError, "Unable to generate the token")
 	}
 
-	// Set new access token to response request
 	c.Response().Header().Set("X-Access-Token", newAccessToken)
 
-	// Create new refresh token
 	refreshToken, err = u.CreateToken(user, refreshTokenMaxAge)
 	if err != nil {
 		log.Errorf("Unable to generate the token")
 		return echo.NewHTTPError(http.StatusInternalServerError, "Unable to generate the token")
 	}
-	// Set new refresh token to response header
 	c.Response().Header().Set("X-Refresh-Token", refreshToken)
 
 	return nil
 }
 
-// Create product
 func CreateProduct(c echo.Context) error {
 	var product postgresql.Product
 	if err := c.Bind(&product); err != nil {
@@ -193,7 +186,6 @@ func CreateProduct(c echo.Context) error {
 	return c.JSON(http.StatusOK, id)
 }
 
-// Delete product
 func DeleteProduct(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -208,7 +200,6 @@ func DeleteProduct(c echo.Context) error {
 	return c.JSON(http.StatusOK, id)
 }
 
-// Get product
 func GetProduct(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -226,7 +217,6 @@ func GetProduct(c echo.Context) error {
 	return c.JSON(http.StatusOK, product)
 }
 
-// Update product
 func UpdateProduct(c echo.Context) error {
 	var product postgresql.Product
 	if err := c.Bind(&product); err != nil {
@@ -240,4 +230,38 @@ func UpdateProduct(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, product)
+}
+
+func AddProductToCart(c echo.Context) error {
+	var cart postgresql.Cart
+	sqlStatement := `
+		SELECT (id) FROM users
+		WHERE email = ($1)
+	`
+	db := postgresql.GetDB()
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Something wrong witg request. Please check it :)t")
+	}
+	cart.Product_id = id
+
+	if err := c.Bind(&cart.Count); err != nil {
+		log.Infof("Cannot bind the request: %v \n", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Something wrong witg request. Please check it :)")
+	}
+
+	claims, err := u.GetClaims(c.Request())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, 0)
+	}
+	email := claims["email"]
+
+	err = db.QueryRow(context.Background(), sqlStatement, email).Scan(&cart.User_id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Internal server error")
+	}
+
+	fmt.Println(cart)
+	return c.JSON(http.StatusOK, id)
 }

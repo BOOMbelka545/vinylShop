@@ -24,6 +24,13 @@ type (
 		Cost        int    `json:"cost,omitempty" validate:"min=0,required"`
 		ArtistName  string `json:"artistName,omitempty"`
 	}
+
+	Cart struct {
+		Id           int  `json:"id,omitempty"`
+		User_id      int  `json:"user_id"`
+		Product_id   int  `json:"product_id"`
+		Count        int  `json:"count"`
+	}
 )
 
 var (

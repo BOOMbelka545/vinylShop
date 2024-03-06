@@ -25,11 +25,9 @@ func isCredValid(givenPwd, storedPwd string) bool {
 	return true
 }
 
-// Authentification user
 func AuthenticateUser(ctx context.Context, user postgresql.User) (postgresql.User, error) {
 	var storedUser postgresql.User
 
-	// Get password from BD
 	sqlStatement := "SELECT password, isadmin FROM users WHERE email=($1)"
 	err := db.QueryRow(context.Background(), sqlStatement, user.Email).Scan(&storedUser.Password, &storedUser.IsAdmin)
 	if err == pgx.ErrNoRows {

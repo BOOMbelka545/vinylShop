@@ -10,7 +10,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// find user to check Is user exist
 func IsUserExist(ctx context.Context, user postgresql.User) bool {
 	var isUser bool
 	sqlStatement := `

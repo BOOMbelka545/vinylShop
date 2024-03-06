@@ -56,8 +56,11 @@ func main() {
 	e.POST("/product", h.CreateProduct, adminMiddleware)
 	e.DELETE("/product/:id", h.DeleteProduct, adminMiddleware)
 	e.GET("/product/:id", h.GetProduct)
-	e.PUT("/product", h.UpdateProduct)
+	e.PUT("/product", h.UpdateProduct, adminMiddleware)
 
+	// Orders handlers: add, get, delete
+	e.POST("/cart/:id", h.AddProductToCart)
+	
 
 	e.Logger.Infof("Listening on %s:%s", cfg.Host, cfg.Port)
 	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)))

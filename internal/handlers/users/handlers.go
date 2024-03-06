@@ -41,14 +41,13 @@ func GetClaims(req *http.Request) (jwt.MapClaims, error) {
 	token, err := jwt.ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(cfg.JwtTokenSecret), nil
 	})
-
-	if err != nil {
-		return claims, echo.NewHTTPError(http.StatusInternalServerError, "Unable to parse JWT with claims")
-	}
-
 	// Checking token validity
 	if !token.Valid {
 		log.Errorf("invalid token")
+	}
+	if err != nil {
+		log.Infof("Cannot parse JWT token")
+		return claims, echo.NewHTTPError(http.StatusInternalServerError, "Unable to parse JWT with claims")
 	}
 
 	return claims, nil
