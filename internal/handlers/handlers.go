@@ -3,11 +3,11 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 	"vinylShop/config"
+	crt "vinylShop/internal/handlers/cart"
 	p "vinylShop/internal/handlers/products"
 	u "vinylShop/internal/handlers/users"
 	"vinylShop/pkg/client/postgresql"
@@ -196,7 +196,6 @@ func DeleteProduct(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-
 	return c.JSON(http.StatusOK, id)
 }
 
@@ -262,6 +261,9 @@ func AddProductToCart(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, "Internal server error")
 	}
 
-	fmt.Println(cart)
+	id, err = crt.AddProductToCart(cart)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Internal server error")
+	}
 	return c.JSON(http.StatusOK, id)
 }
