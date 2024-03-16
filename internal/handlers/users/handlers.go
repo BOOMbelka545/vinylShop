@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 	"time"
-	"vinylShop/pkg/client/postgresql"
+	"vinylShop/internal/db/postgresql"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/ilyakaznacheev/cleanenv"

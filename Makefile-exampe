@@ -1,0 +1,12 @@
+DB_USER ?=
+DB_PASSWORD ?=
+DB_NAME ?=
+DB_PORT ?=
+DB_URL ?=
+
+# Миграции для базы данных
+migration_up:
+	goose -dir internal/repository/migration postgres "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_URL):$(DB_PORT)/$(DB_NAME)?sslmode=disable" up
+
+migration_down:
+    goose -dir internal/repository/migration postgres "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_URL):$(DB_PORT)/$(DB_NAME)?sslmode=disable" down

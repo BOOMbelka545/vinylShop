@@ -3,7 +3,7 @@ package products
 import (
 	"context"
 	"net/http"
-	"vinylShop/pkg/client/postgresql"
+	"vinylShop/internal/db/postgresql"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"

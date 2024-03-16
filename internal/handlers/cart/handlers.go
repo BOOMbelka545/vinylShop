@@ -2,7 +2,7 @@ package cart
 
 import (
 	"context"
-	"vinylShop/pkg/client/postgresql"
+	"vinylShop/internal/db/postgresql"
 
 	"github.com/labstack/gommon/log"
 )

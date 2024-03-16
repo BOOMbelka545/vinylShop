@@ -17,25 +17,25 @@ type (
 		Password string `json:"password,omitempty" validate:"min=8,max=300,required"`
 		IsAdmin  bool   `json:"isadmin,omitempty"`
 	}
-	
+
 	Product struct {
-		Id          int    `json:"id,omitempty"`
-		Name        string `json:"name" validate:"required"`
-		Cost        int    `json:"cost,omitempty" validate:"min=0,required"`
-		ArtistName  string `json:"artistName,omitempty"`
+		Id         int    `json:"id,omitempty"`
+		Name       string `json:"name" validate:"required"`
+		Cost       int    `json:"cost,omitempty" validate:"min=0,required"`
+		ArtistName string `json:"artistName,omitempty"`
 	}
 
 	Cart struct {
-		Id           int  `json:"id,omitempty"`
-		User_id      int  `json:"user_id"`
-		Product_id   int  `json:"product_id"`
-		Count        int  `json:"count"`
+		Id         int `json:"id,omitempty"`
+		User_id    int `json:"user_id"`
+		Product_id int `json:"product_id"`
+		Count      int `json:"count"`
 	}
 )
 
 var (
 	conn *pgx.Conn
-	cfg   config.Properties
+	cfg  config.Properties
 )
 
 func init() {
@@ -44,34 +44,6 @@ func init() {
 	}
 
 	conn = connToDB(cfg)
-
-	// ! Maybe it doesn't work. I didn't check it but it looks good
-	// * Check migration file
-	sqlStatement := `
-		CREATE TABLE IF NOT EXISTS users (
-			id SERIAL PRIMARY KEY,
-			email VARCHAR(255) NOT NULL,
-			password VARCHAR(255) NOT NULL,
-			isadmin bool
-		)
-	`
-	_, err := conn.Exec(context.Background(), sqlStatement)
-	if err != nil {
-		log.Fatalf("Table users connot be created: %v\n", err)
-	}
-
-	sqlStatement = `
-		CREATE TABLE IF NOT EXISTS users (
-			id SERIAL PRIMARY KEY,
-			name VARCHAR(255) NOT NULL,
-			cost integer NOT NULL,
-			artistname VARCHAR(255) NOT NULL
-		)
-	`
-	_, err = conn.Exec(context.Background(), sqlStatement)
-	if err != nil {
-		log.Fatalf("Table products connot be created: %v\n", err)
-	}
 }
 
 func connToDB(cfg config.Properties) *pgx.Conn {
@@ -89,7 +61,7 @@ func connToDB(cfg config.Properties) *pgx.Conn {
 	}
 
 	// defer conn.Close(context.Background())
-
+	
 	return conn
 }
 

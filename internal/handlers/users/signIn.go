@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 	"vinylShop/config"
-	"vinylShop/pkg/client/postgresql"
+	"vinylShop/internal/db/postgresql"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"

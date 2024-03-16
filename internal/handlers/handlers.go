@@ -10,7 +10,7 @@ import (
 	crt "vinylShop/internal/handlers/cart"
 	p "vinylShop/internal/handlers/products"
 	u "vinylShop/internal/handlers/users"
-	"vinylShop/pkg/client/postgresql"
+	"vinylShop/internal/db/postgresql"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/ilyakaznacheev/cleanenv"
