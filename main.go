@@ -59,7 +59,9 @@ func main() {
 	e.PUT("/product", h.UpdateProduct, adminMiddleware)
 
 	// Orders handlers: add, get, delete
-	e.POST("/cart/:id", h.AddProductToCart)
+	e.POST("/cartAdd/:id", h.AddProductToCart)
+	e.PUT("/cartProductAdd/:id", h.AddExistsProduct)
+	e.PUT("/cartProductSub/:id", h.SubExistsProduct)
 	
 
 	e.Logger.Infof("Listening on %s:%s", cfg.Host, cfg.Port)
