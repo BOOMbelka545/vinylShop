@@ -62,6 +62,7 @@ func main() {
 	e.POST("/cartAdd/:id", h.AddProductToCart)
 	e.PUT("/cartProductAdd/:id", h.AddExistsProduct)
 	e.PUT("/cartProductSub/:id", h.SubExistsProduct)
+	e.POST("/payment", h.Payment)
 	
 
 	e.Logger.Infof("Listening on %s:%s", cfg.Host, cfg.Port)

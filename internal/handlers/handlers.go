@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -232,128 +233,41 @@ func UpdateProduct(c echo.Context) error {
 }
 
 func AddProductToCart(c echo.Context) error {
-	var cart postgresql.Cart
-	sqlStatement := `
-		SELECT (id) FROM users
-		WHERE email = ($1)
-	`
-	db := postgresql.GetDB()
-
-	id, err := strconv.Atoi(c.Param("id"))
+	cart, err := crt.GetCart(c)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Something wrong witg request. Please check it :)t")
-	}
-	cart.Product_id = id
-	if err := c.Bind(&cart.Count); err != nil {
-		log.Infof("Cannot bind the request: %v \n", err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Something wrong witg request. Please check it :)")
+		return err
 	}
 
-	claims, err := u.GetClaims(c.Request())
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, 0)
-	}
-	email := claims["email"]
-
-	err = db.QueryRow(context.Background(), sqlStatement, email).Scan(&cart.User_id)
+	err = crt.AddProductToCart(cart)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Internal server error")
 	}
-
-	id, err = crt.AddProductToCart(cart)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, "Internal server error")
-	}
-	return c.JSON(http.StatusOK, id)
+	return c.JSON(http.StatusOK, "New product has been added")
 }
 
 func AddExistsProduct(c echo.Context) error {
-	var userId int
-	sqlGetUserId := `
-		SELECT (id) FROM users
-		WHERE email = ($1)
-	`
-
-	sqlUpdateValue := `
-		UPDATE cart SET count = count + 1
-		WHERE user_id = ($1) AND product_id = ($2)
-	`
-
-	db := postgresql.GetDB()
-
-	productId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Something wrong witg request. Please check it :)t")
-	}
-
-	claims, err := u.GetClaims(c.Request())
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, 0)
-	}
-	email := claims["email"]
-
-	err = db.QueryRow(context.Background(), sqlGetUserId, email).Scan(&userId)
+	err := crt.AddExistsProduct(c)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Internal server error")
-	}
-
-	_, err = db.Exec(context.Background(), sqlUpdateValue, userId, productId)
-	if err != nil {
-		log.Errorf("Cannot update value: %v", err)
-		return err
 	}
 
 	return c.JSON(http.StatusOK, "Product has been added")
 }
 
 func SubExistsProduct(c echo.Context) error {
-	var count int
-	var userId int
-	sqlGetUserId := `
-		SELECT (id) FROM users
-		WHERE email = ($1)
-	`
-	sqlUpdateValue := `
-		UPDATE cart SET count = count - 1
-		WHERE user_id = ($1) AND product_id = ($2)
-		RETURNING count
-	`
-	sqlDeleteProduct := `
-		DELETE FROM cart 
-		WHERE user_id = ($1) AND product_id = ($2)
-	`
-
-	db := postgresql.GetDB()
-
-	productId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Something wrong witg request. Please check it :)t")
-	}
-
-	claims, err := u.GetClaims(c.Request())
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, 0)
-	}
-	email := claims["email"]
-
-	err = db.QueryRow(context.Background(), sqlGetUserId, email).Scan(&userId)
+	err := crt.SubExistsProduct(c)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Internal server error")
 	}
 
-	err = db.QueryRow(context.Background(), sqlUpdateValue, userId, productId).Scan(&count)
-	if err != nil {
-		log.Errorf("Cannot update value: %v", err)
-		return err
-	}
-
-	if count == 0{
-		_, err = db.Exec(context.Background(), sqlDeleteProduct, userId, productId)
-		if err != nil {
-			log.Errorf("Cannot Delete product: %v", err)
-			return err
-		}
-	}
-
 	return c.JSON(http.StatusOK, "Product has been substract")
+}
+
+func Payment(c echo.Context) error {
+	err := crt.Payment(c)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return c.JSON(http.StatusOK, "Payment was successful")
 }
